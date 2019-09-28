@@ -5,6 +5,7 @@ defmodule Quotes.Originator do
 
   schema "originators" do
     field :name, :string
+    has_many :quotes, Quotes.Quote
   end
 
   def changeset(%Quotes.Originator{} = originator, attrs \\ %{}) do
