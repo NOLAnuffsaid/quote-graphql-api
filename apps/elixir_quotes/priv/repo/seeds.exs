@@ -9,6 +9,8 @@
 #
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
+gen_tags = fn -> (5..10) |> Enum.random() |> Faker.Util.list(&Faker.Industry.sub_sector/0) end
+
 gen_originator_name_params = fn ->
   web_name = &Faker.Internet.user_name/0
   full_name = &Faker.Name.name/0
@@ -21,11 +23,5 @@ gen_originator_name_params = fn ->
   %{:name => func.()}
 end
 
-
 gen_quote_text = fn ->(4..10) |> Enum.random() |> Faker.Lorem.sentence() end
 gen_quote_params = fn t -> %{:quote_text => t} end
-
-
-
-
-
