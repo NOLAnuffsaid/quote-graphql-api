@@ -6,6 +6,7 @@ defmodule Quotes.Quote do
   schema "quotes" do
     field :quote_text, :string
     belongs_to :originator, Quotes.Originator
+    many_to_many :tags, Quotes.Tag, join_through: "quotes_tags"
   end
 
   def changeset(%Quotes.Quote{} = quote, attrs \\ %{}) do
