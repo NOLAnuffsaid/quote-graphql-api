@@ -11,7 +11,14 @@ defmodule Quotes.Originator do
   def changeset(%Quotes.Originator{} = originator, attrs \\ %{}) do
     originator
     |> cast(attrs, [:name])
+    |> cast_assoc(:quotes, with: &Quotes.Quote.changeset/2)
     |> validate_required([:name])
     |> unique_constraint(:name)
+  end
+
+  def changeset_assoc(%Quotes.Originator{} = originator, attrs \\ %{}) do
+    originator
+    |> changeset(attrs)
+    |> cast_assoc(:quotes, with: &Quotes.Quote.changeset/2)
   end
 end

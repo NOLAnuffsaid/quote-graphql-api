@@ -5,6 +5,7 @@ defmodule Quotes.Tag do
 
   schema "tags" do
     field :tag_name, :string
+    many_to_many :quotes, Quotes.Quote, join_through: "quotes_tags"
   end
 
   def changeset(%Quotes.Tag{} = tag, attrs \\ %{}) do

@@ -11,9 +11,9 @@ defmodule Quotes.Quote do
 
   def changeset(%Quotes.Quote{} = quote, attrs \\ %{}) do
     quote
-    |> cast(attrs, [:quote_text, :originator_id])
+    |> cast(attrs, [:quote_text])
     |> update_change(:quote_text, &String.downcase/1)
-    |> validate_required([:quote_text, :originator_id])
+    |> validate_required([:quote_text])
     |> assoc_constraint(:originator)
   end
 end
