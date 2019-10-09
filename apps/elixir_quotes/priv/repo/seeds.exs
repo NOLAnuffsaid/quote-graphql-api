@@ -54,8 +54,6 @@ end
 
 data = (7..12) |> Enum.random() |> Faker.Util.list(gen_data)
 
-IO.inspect(data)
-
 m_to_m_list =
   data
   |> Enum.each(fn
@@ -71,9 +69,6 @@ m_to_m_list =
             t_id
           end)
           |> Enum.map(fn t_id -> %{:quote_id => q_id, :tag_id => t_id} end)
-
-        IO.inspect(x)
-        IO.inspect(quotes_tags_attrs)
 
         Repo.insert_all("quotes_tags", quotes_tags_attrs)
       end
