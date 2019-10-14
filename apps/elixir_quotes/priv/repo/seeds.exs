@@ -34,42 +34,7 @@ gen_data = fn ->
   }
 end
 
-alias Quotes.{Originator, Repo, Quote, Tag}
-
-insert_o = fn %{:name => _n} = attrs -> %Originator{} |> Originator.changeset(attrs) |> Repo.insert!() end
-
-insert_q = fn %{:quote_text => qt, :originator_id => _o_id} = attrs ->
-  case Repo.get_by(Quote, %{:quote_text => String.downcase(qt)}) do
-    %Quote{} = schema -> schema
-    _ -> %Quote{} |> Quote.changeset(attrs) |> Repo.insert!()
-  end
-end
-
-insert_t = fn %{:tag_name => tn} = attrs ->
-  case Repo.get_by(Tag, %{:tag_name => String.downcase(tn)}) do
-    %Tag{} = schema -> schema
-    _ -> %Tag{} |> Tag.changeset(attrs) |> Repo.insert!()
-  end
-end
-
-data = (7..12) |> Enum.random() |> Faker.Util.list(gen_data)
-
-m_to_m_list =
-  data
-  |> Enum.each(fn
-    x ->
-      %Originator{:id => o_id} = insert_o.(x)
-      for q <- x.quotes do
-        q_attrs = Map.merge(q, %{:originator_id => o_id})
-        %Quote{:id => q_id} = insert_q.(q_attrs)
-
-        quotes_tags_attrs = q.tags
-          |> Enum.map(fn t ->
-            %Tag{:id => t_id} = insert_t.(t)
-            t_id
-          end)
-          |> Enum.map(fn t_id -> %{:quote_id => q_id, :tag_id => t_id} end)
-
-        Repo.insert_all("quotes_tags", quotes_tags_attrs)
-      end
-  end)
+(7..12)
+|> Enum.random()
+|> Faker.Util.list(gen_data)
+|> Enum.each(&Quotes.add_originator/1)

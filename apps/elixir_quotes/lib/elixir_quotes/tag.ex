@@ -5,7 +5,7 @@ defmodule Quotes.Tag do
 
   schema "tags" do
     field :tag_name, :string
-    many_to_many :quotes, Quotes.Quote, join_through: "quotes_tags"
+    many_to_many :quotes, Quotes.Quote, join_through: "quotes_tags", on_delete: :delete_all
   end
 
   def changeset(%Quotes.Tag{} = tag, attrs \\ %{}) do
