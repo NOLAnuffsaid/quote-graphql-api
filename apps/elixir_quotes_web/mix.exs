@@ -24,7 +24,7 @@ defmodule QuotesWeb.MixProject do
   def application do
     [
       mod: {QuotesWeb.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :absinthe_plug]
     ]
   end
 
@@ -44,7 +44,9 @@ defmodule QuotesWeb.MixProject do
       {:elixir_quotes, in_umbrella: true},
       {:jason, "~> 1.0"},
       {:plug_cowboy, "~> 2.0"},
-      {:faker, "~> 0.12.0", only: [:dev, :test]}
+      {:faker, "~> 0.12.0", only: [:dev, :test]},
+      {:absinthe, "~> 1.4"},
+      {:absinthe_plug, "~> 1.4"}
     ]
   end
 

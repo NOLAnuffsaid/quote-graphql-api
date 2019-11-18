@@ -21,6 +21,8 @@ defmodule QuotesWeb.ConnCase do
       use Phoenix.ConnTest
       alias QuotesWeb.Router.Helpers, as: Routes
 
+      import QuotesWeb.Factory
+
       # The default endpoint for testing
       @endpoint QuotesWeb.Endpoint
     end

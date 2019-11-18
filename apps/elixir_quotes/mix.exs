@@ -23,9 +23,11 @@ defmodule Quotes.MixProject do
   def application do
     [
       mod: {Quotes.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: apps()
     ]
   end
+
+  defp apps(), do: [:logger, :runtime_tools]
 
   # Specifies which paths to compile per environment.
   defp elixirc_paths(:test), do: ["lib", "test/support"]
@@ -39,7 +41,8 @@ defmodule Quotes.MixProject do
       {:ecto_sql, "~> 3.1"},
       {:postgrex, ">= 0.0.0"},
       {:jason, "~> 1.0"},
-      {:faker, "~> 0.12.0", only: [:dev, :test]}
+      {:faker, "~> 0.12.0", only: [:dev, :test]},
+      {:stream_data, "~> 0.4.3", only: [:test]}
     ]
   end
 
@@ -54,7 +57,7 @@ defmodule Quotes.MixProject do
       "ecto.reset.no_seed": ["ecto.drop", "ecto.create", "ecto.migrate"],
       "ecto.setup": ["ecto.create", "ecto.migrate", "run priv/repo/seeds.exs"],
       "ecto.reset": ["ecto.drop", "ecto.setup"],
-      test: ["ecto.create --quiet", "ecto.migrate", "test"]
+      test: ["ecto.reset.no_seed", "test"]
     ]
   end
 end

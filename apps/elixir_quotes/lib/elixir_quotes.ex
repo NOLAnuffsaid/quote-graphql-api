@@ -11,50 +11,72 @@ defmodule Quotes do
 
   import Ecto.Query
 
-  def add_originator(%{:name => n, :quotes => qs} = payload) do
+  def get_all_originators(), do: Repo.all(Originator) |> Repo.preload(quotes: [:tags])
+
+  def get_originator(id) when is_number(id), do: Repo.get(Originator, id) |> Repo.preload(quotes: [:tags])
+  def get_originator(_), do: {:error, :failed}
+
+  def get_originator_by(attrs \\ %{}), do: Repo.get_by(Originator, attrs) |> Repo.preload(quotes: [:tags])
+
+  def get_originator_with(%Ecto.Query{} = q), do: Repo.get(Originator, q)
+
+  def add_originator(%{:name => n, :quotes => qs} = payload) when length(qs) > 0 do
     case Repo.get_by(Originator, %{:name => n}) do
       %Originator{:id => o_id} ->
         add_quotes(o_id, qs)
-      _ ->
-        %Originator{:id => o_id} = %Originator{} |> Originator.changeset(payload) |> Repo.insert!()
+        {:ok, get_originator(o_id)}
+      nil ->
+        {:ok, %Originator{:id => o_id}} = %Originator{} |> Originator.changeset(payload) |> Repo.insert()
         add_quotes(o_id, qs)
+        {:ok, get_originator(o_id)}
     end
   end
 
-  def add_originator(%{:name => _n} = attrs) do
-    case Repo.get_by(Originator, attrs) do
-      %Originator{} = o -> o
-      _ -> %Originator{} |> Originator.changeset(attrs) |> Repo.insert!()
+  def add_originator(%{:name => n} = attrs) do
+    case Repo.get_by(Originator, %{:name => n}) do
+      %Originator{:id => _} = o -> {:ok, o}
+      out -> %Originator{} |> Originator.changeset(attrs) |> Repo.insert()
     end
-
-    :ok
   end
 
-  def add_originator(_), do: :error
+  def add_originator(attrs), do: IO.inspect(attrs); {:error, :failed}
 
   def delete_originator(o_id) when is_number(o_id), do: Originator |> Repo.get(o_id) |> Repo.delete()
-  def delete_originator(_), do: :error
+  def delete_originator(_), do: {:error, :failed}
+
+  def get_all_quotes(), do: Repo.all(Quote) |> Repo.preload([:originator, :tags])
+
+  def get_quote(id) when is_number(id), do: Repo.get(Quote, id) |> Repo.preload([:originator, :tags])
+  def get_quote(_), do: {:error, :failed}
+
+  def get_quote_by(attrs \\ %{}), do: Repo.get_by(Quote, attrs) |> Repo.preload([:originator, :tags])
+
+  def get_quote_with(%Ecto.Query{} = q), do: Repo.get(Quote, q)
 
   def add_quotes(_, []), do: :ok
   def add_quotes(originator_id, qs) do
     qs
-    |> Enum.each(fn q ->
-      %Quote{:id => q_id} = q |> Map.merge(%{:originator_id => originator_id}) |> add_quote()
-      ts = add_tags(q.tags)
+    |> Enum.each(fn
+      %{:tags => []} = q ->
+        %Quote{:id => q_id} = q |> Map.merge(%{:originator_id => originator_id}) |> add_quote()
 
-      assoc_quotes_tags(q_id, %{:tags => ts})
-    end)
+      q ->
+        %Quote{:id => q_id} = q |> Map.merge(%{:originator_id => originator_id}) |> add_quote()
+        ts = add_tags(q.tags)
+
+        assoc_quotes_tags(q_id, %{:tags => ts})
+      end)
   end
 
   def add_quote(%{:originator_id => _o_id, :quote_text => _qt} = attrs), do: %Quote{} |> Quote.changeset(attrs) |> Repo.insert!()
-  def add_quote(_), do: :error
+  def add_quote(_), do: {:error, :failed}
 
   # Must delete the many to many tag assoc as well.
   def delete_quote(quote_id) when is_number(quote_id), do: Quote |> Repo.get(quote_id) |> Repo.delete()
-  def delete_quote(_), do: :error
+  def delete_quote(_), do: {:error, :failed}
 
   def update_quote(quote_id, %{:tags => _ts} = attrs) when is_number(quote_id) do
-    query = from q in Quote, where: q.id == ^quote_id, preload: [:originator, :tags]
+    query = from q in Quote, where: (q.id == ^quote_id), preload: [:originator, :tags]
 
     %Quote{:id => q_id} = query
       |> Repo.one()
@@ -64,9 +86,16 @@ defmodule Quotes do
     assoc_quotes_tags(q_id, attrs)
   end
 
-  def update_quote(_, _), do: :error
+  def update_quote(_, _), do: {:error, :failed}
 
-  def add_tags([]), do: :error
+  def get_all_tags(), do: Repo.all(Tag) |> Repo.preload(quotes: [:originator])
+
+  def get_tag(id) when is_number(id), do: Repo.get(Tag, id) |> Repo.preload(quotes: [:originator])
+  def get_tag(_), do: {:error, :failed}
+
+  def get_tag_by(attrs \\ %{}), do: Repo.get_by(Tag, attrs) |> Repo.preload(quotes: [:originator])
+
+  def add_tags([]), do: :ok
   def add_tags(ts), do: Enum.map(ts, &add_tag/1)
 
   def add_tag(%{:tag_name => t} = attrs) do
@@ -78,11 +107,11 @@ defmodule Quotes do
     end
   end
 
-  def add_tag(_), do: :error
+  def add_tag(_), do: {:error, :failed}
 
   # Must delete the many to many quote assoc as well.
   def delete_tag(tag_id) when is_number(tag_id), do: Tag |> Repo.get(tag_id) |> Repo.delete()
-  def delete_tag(_), do: :error
+  def delete_tag(_), do: {:error, :failed}
 
   defp assoc_quotes_tags(_, %{:tags => []}), do: :ok
   defp assoc_quotes_tags(quote_id, %{:tags => ts}) when is_number(quote_id) do
@@ -96,5 +125,5 @@ defmodule Quotes do
     :ok
   end
 
-  defp assoc_quotes_tags(_, _), do: :error
+  defp assoc_quotes_tags(_, _), do: {:error, :failed}
 end

@@ -11,7 +11,13 @@ config :elixir_quotes_web, QuotesWeb.Endpoint,
   debug_errors: true,
   code_reloader: true,
   check_origin: false,
-  watchers: []
+  watchers: [],
+  live_reload: [
+    url: "http://localhost:4000",
+    patterns: [
+      ~r{app/*/lib/}
+    ]
+  ]
 
 # ## SSL Support
 #
@@ -46,3 +52,5 @@ config :phoenix, :plug_init_mode, :runtime
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.
 config :phoenix, :stacktrace_depth, 20
+
+import_config "../.config.dev.exs"
